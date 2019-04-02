@@ -1,14 +1,35 @@
 // Each character in the game has 3 attributes: `Health Points`, `Attack Power` and`Counter Attack Power`.
+$(document).ready(function () {
+    
 
-var characterBase = function (name_, health_, attackPower_, counterAttackPower_) {
+var idCounter = 0;
+var characterBase = function (_image, _name, _type, _health, _attackPower, _counterAttackPower) {
     return {
-        id: 0,
-        name: name_,
-        health: health_,
-        attackPower: attackPower_,
-        counterAttackPower: counterAttackPower_
-    }
+        id: idCounter++,
+        image: _image,
+        name: _name,
+        type: _type,
+        health: _health,
+        attackPower: _attackPower,
+        counterAttackPower: _counterAttackPower,
+    };
+};
+
+
+
+var names = ['Olozumin','Krisrora','Perqen','Daharice','Bromno'];
+var types = ['Human','Elf','Human','Mage','Elf','Eladrin'];
+var deck = $('<div>');
+$(deck).addClass('card-deck');
+var caPoints = getCAPoints();
+for(var i=0;i<names.length,i++;){
+    var ap = random(20, 40);
+    var charPlayer = new characterBase('/assets/images/p'+i+'.jpg', names[i], types[i], 100, 100-ap, caPoints[i]);
+    var newPlayerCard = createCharCard(charPlayer);
+    $(deck).append(newPlayerCard);
 }
+
+$('#gameArea').append(deck);
 
 // Each time the player attacks, their character's Attack Power increases by its base Attack Power. 
 // For example, if the base Attack Power is 6, each attack will increase the Attack Power by 6(12, 18, 24, 30 and so on).
@@ -18,12 +39,34 @@ var characterBase = function (name_, health_, attackPower_, counterAttackPower_)
 // No characters in the game can heal or recover Health Points. 
 // A winning player must pick their characters wisely by first fighting an enemy with low`Counter Attack Power`.This will allow them to grind`Attack Power` and to take on enemies before they lose all of their`Health Points`.Healing options would mess with this dynamic.
 // Your players should be able to win and lose the game no matter what character they choose.The challenge should come from picking the right enemies, not choosing the strongest player.
-
+function getCAPoints(){
+    var prevnum = 0;
+var cap = [];
+for(let i=0;i<names.length,i++;){
+    var ca = random(30, 50);
+    if(prevnum === 0){       
+        prevnum = ca;
+        
+    }else{
+    do{
+        ca = random(30, 50);
+        var c = random(3, 5);
+        ca =+ c;
+    }while(ca < prevnum);
+   cap.push(ca);
+    }   
+}
+return cap;
+}
+function random(min,max){
+   return Math.floor((Math.random() * max) + min);
+}
 var screen = function () {
     return { 
         
     
-}}
+};};
+
 // Each time the player attacks, their character's Attack Power increases by its base Attack Power. 
 // For example, if the base Attack Power is 6, each attack will increase the Attack Power by 6(12, 18, 24, 30 and so on).
 function calcAttackPower(base, currentAttackPower) {
@@ -109,3 +152,63 @@ function opponentAttack() {
 //    * When the defender's `HP` is reduced to zero or below, remove the enemy from the `defender area`. The player character can now choose a new opponent.
 
 // 4. The player wins the game by defeating all enemy characters.The player loses the game the game if their character's `HP` falls to zero or below.
+
+
+function createCharCard(_character){
+    var id = "p" + _character.id;
+    var cardDivCard = $('<div>');
+    $(cardDivCard).addClass('card col-2 shadow-lg');
+    $(cardDivCard).attr('id', 'card_' + id);
+    var cardDivCardTitle = $('<h4>');
+    $(cardDivCardTitle).addClass('card-title');
+    $(cardDivCardTitle).attr('id', 'title_' + id);
+    $(cardDivCardTitle).text(_character.name);
+        var cardDivProfile = $('<div>');
+        $(cardDivProfile).addClass('profile');
+        $(cardDivProfile).attr('id', 'profile_' + id);
+            var profileDivProfileImg = $('<img>');
+            $(profileDivProfileImg).addClass('card-img-top ml-1 mr-1');
+            $(profileDivProfileImg).attr('id', _character.id);
+            $(profileDivProfileImg).attr('src', _character.image)
+            var profileDivProfileAttributes = $('<div>');
+            $(profileDivProfileAttributes).addClass('attributes');
+            $(profileDivProfileAttributes).attr('id', 'attributes_' + id);
+                var attributeDivAttributesHp = $('<div>');
+                $(attributeDivAttributesHp).addClass('progress-bar mt-1 hp');
+                $(attributeDivAttributesHp).attr({
+                                                                            role: 'progressbar',
+                                                                            "aria-valuenow":"100",
+                                                                            "aria-valuemin": "0",
+                                                                            "aria-valuemax": "100",
+                                                                        });
+                $(attributeDivAttributesHp).css('width','100%');                                                     
+                var attributeDivAttributesAp = $('<div>');
+                $(attributeDivAttributesAp).addClass('progress-bar mt-1 ap');
+                $(attributeDivAttributesAp).attr({
+                    role: 'progressbar',
+                    "aria-valuenow":"100",
+                    "aria-valuemin": "0",
+                    "aria-valuemax": "100",
+                });
+                $(attributeDivAttributesAp).css('width','100%');              
+    var cardDivBody = $('<div>');
+    $(cardDivBody).addClass('card-body');
+    var cardDivText = $('<p>');
+    $(cardDivText).addClass('card-text');
+    $(cardDivText).text(_character.type);
+    $(cardDivBody).append(cardDivText);
+    
+    $(cardDivCard).append(cardDivCardTitle);
+    $(cardDivProfile).append(profileDivProfileImg);
+    $(profileDivProfileAttributes).append(attributeDivAttributesHp);
+    $(profileDivProfileAttributes).append(attributeDivAttributesAp);
+    $(cardDivProfile).append(profileDivProfileAttributes);
+    $(cardDivCard).append(cardDivProfile);
+    $(cardDivCard).append(cardDivBody);
+    
+    return $(cardDivCard);
+
+}
+
+
+});
