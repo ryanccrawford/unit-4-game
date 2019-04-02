@@ -2,3 +2,23 @@ body{
     background-color: dimgrey;
 
 }
+
+#p1{
+
+background-image: url(../images/characters.png);
+width: 112px;
+height: 112px;
+
+
+}
+
+#p2{
+
+    background-image: url(../images/characters.png);
+    width: 112px;
+    height: 112px;
+    background-position-x: 112px;
+    background-position-y: 112px;
+
+    
+}

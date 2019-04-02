@@ -2,7 +2,7 @@
 
 var characterBase = function (name_, health_, attackPower_, counterAttackPower_) {
     return {
-        static id: 0,
+        id: 0,
         name: name_,
         health: health_,
         attackPower: attackPower_,
