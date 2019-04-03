@@ -3,32 +3,12 @@ body{
 
 }
 
-#p1{
+#p0,#p1,#p2,#p3,#p4,#p5,#p6{
 
-background-image: url(../images/characters.png);
 width: 112px;
 height: 112px;
 
 
 }
-
-#p2{
-
-    background-image: url(../images/characters.png);
-    width: 112px;
-    height: 112px;
-    background-position-x: 112px;
-    background-position-y: 112px;
-
-    
-}
-
-#p0{
-
-    background-image: url(../images/characters.png);
-    width: 112px;
-    height: 112px;
-    background-position-x: 112px;
-    background-position-y: 112px;
-
-}
+.ap{background-color: blue;}
+.hp{background-color: green;}

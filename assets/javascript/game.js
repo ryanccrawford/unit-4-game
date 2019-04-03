@@ -1,37 +1,30 @@
 // Each character in the game has 3 attributes: `Health Points`, `Attack Power` and`Counter Attack Power`.
 $(document).ready(function () {
+    var characters = [];
+    var ic = 0;
+    var idCounter = 0;
+    var characterBase = function (_id, _image, _name, _type, _health, _attackPower, _counterAttackPower) {
+        return {
+            id: _id,
+            image: _image,
+            name: _name,
+            type: _type,
+            health: _health,
+            attackPower: _attackPower,
+            counterAttackPower: _counterAttackPower,
+        };
+    };
+
     
 
-var idCounter = 0;
-var characterBase = function (_image, _name, _type, _health, _attackPower, _counterAttackPower) {
-    return {
-        id: idCounter++,
-        image: _image,
-        name: _name,
-        type: _type,
-        health: _health,
-        attackPower: _attackPower,
-        counterAttackPower: _counterAttackPower,
-    };
-};
-
-
-
-var names = ['Olozumin','Krisrora','Perqen','Daharice','Bromno'];
-var types = ['Human','Elf','Human','Mage','Elf','Eladrin'];
-var deck = $('<div>');
-    $(deck).addClass('card-deck');
-    var caPoints = [20, 15, 26, 12, 67];
-//var caPoints = getCAPoints();
-for(var i=0;i<names.length,i++;){
-    var ap = random(20, 40);
-    var charPlayer = new characterBase('/assets/images/p'+i+'.jpg', names[i], types[i], 100, 100-ap, caPoints[i]);
-    var newPlayerCard = createCharCard(charPlayer);
-    $(deck).append(newPlayerCard);
-}
-
-$('#gameArea').append(deck);
-
+var names1 = ['Xiomi','Krisrora','Perqen','Daharice','Bromno','Firick','Jacob'];
+var types1 = ['Human','Elf','Mage','Underlord','Goblin','Night Drifter','Eladrin'];
+var deck1 = createDeck(names1, types1);
+var row1 = $('<div>');
+$(row1).addClass('row');
+    $(row1).append(deck1);
+$('#gameArea').append(row1);
+ 
 // Each time the player attacks, their character's Attack Power increases by its base Attack Power. 
 // For example, if the base Attack Power is 6, each attack will increase the Attack Power by 6(12, 18, 24, 30 and so on).
 // The enemy character only has`Counter Attack Power`.
@@ -40,33 +33,13 @@ $('#gameArea').append(deck);
 // No characters in the game can heal or recover Health Points. 
 // A winning player must pick their characters wisely by first fighting an enemy with low`Counter Attack Power`.This will allow them to grind`Attack Power` and to take on enemies before they lose all of their`Health Points`.Healing options would mess with this dynamic.
 // Your players should be able to win and lose the game no matter what character they choose.The challenge should come from picking the right enemies, not choosing the strongest player.
-function getCAPoints(){
-    var prevnum = 0;
-    var cap = [];
-    for(let i=0;i<names.length,i++;){
-    var ca = random(30, 50);
-    if(prevnum === 0){       
-        prevnum = ca;
-        
-    }else{
-    do{
-        ca = random(30, 50);
-        var c = random(3, 5);
-        ca =+ c;
-    }while(ca < prevnum);
-   cap.push(ca);
-    }   
-}
-return cap;
-}
-function random(min,max){
-   return Math.floor((Math.random() * max) + min);
-}
+
 var screen = function () {
     return { 
         
     
-};};
+};
+};
 
 // Each time the player attacks, their character's Attack Power increases by its base Attack Power. 
 // For example, if the base Attack Power is 6, each attack will increase the Attack Power by 6(12, 18, 24, 30 and so on).
@@ -154,11 +127,29 @@ function opponentAttack() {
 
 // 4. The player wins the game by defeating all enemy characters.The player loses the game the game if their character's `HP` falls to zero or below.
 
-
+function createDeck(_n,_t){
+    var d = $('<div>');
+    $(d).addClass('row');
+    var ca = randomNum();
+    var apmax = 50;
+    var vc =  _n.length-1;
+    while(ic <= vc){
+    var ap = randomNum(10,apmax);
+    apmax =- ap;
+    var charPlayer = new characterBase(idCounter++, 'assets/images/p'+ic.toString()+'.jpg', _n[ic], _t[ic], 100, (100-ap), ap);
+    characters.push(charPlayer); 
+    var newPlayerCard = createCharCard(charPlayer);
+    $(d).append(newPlayerCard);
+    ic++;
+    }
+  
+    return d;
+}
 function createCharCard(_character){
     var id = "p" + _character.id;
     var cardDivCard = $('<div>');
-    $(cardDivCard).addClass('card col-2 shadow-lg');
+
+    $(cardDivCard).addClass('card col-xs-6 col-sm-3 col-m-4 col-xl-2 m-1');
     $(cardDivCard).attr('id', 'card_' + id);
     var cardDivCardTitle = $('<h4>');
     $(cardDivCardTitle).addClass('card-title');
@@ -172,8 +163,9 @@ function createCharCard(_character){
             $(profileDivProfileImg).attr('id', _character.id);
             $(profileDivProfileImg).attr('src', _character.image)
             var profileDivProfileAttributes = $('<div>');
-            $(profileDivProfileAttributes).addClass('attributes');
-            $(profileDivProfileAttributes).attr('id', 'attributes_' + id);
+            $(profileDivProfileAttributes).addClass('attributes'); 
+            $(profileDivProfileAttributes).addClass('progress');
+            $(profileDivProfileAttributes).attr('id', 'attributesHp_' + id);
                 var attributeDivAttributesHp = $('<div>');
                 $(attributeDivAttributesHp).addClass('progress-bar mt-1 hp');
                 $(attributeDivAttributesHp).attr({
@@ -182,16 +174,23 @@ function createCharCard(_character){
                                                                             "aria-valuemin": "0",
                                                                             "aria-valuemax": "100",
                                                                         });
-                $(attributeDivAttributesHp).css('width','100%');                                                     
+                $(attributeDivAttributesHp).css('width','100%');
+                $(attributeDivAttributesHp).text('Health');
+                var profileDivProfileAttributes2 = $('<div>');
+                $(profileDivProfileAttributes2).addClass('attributes'); 
+                $(profileDivProfileAttributes2).addClass('progress');
+                $(profileDivProfileAttributes2).attr('id', 'attributesAp_' + id);  
+
                 var attributeDivAttributesAp = $('<div>');
                 $(attributeDivAttributesAp).addClass('progress-bar mt-1 ap');
                 $(attributeDivAttributesAp).attr({
                     role: 'progressbar',
-                    "aria-valuenow":"100",
+                    "aria-valuenow":_character.attackPower.toString()+"%",
                     "aria-valuemin": "0",
                     "aria-valuemax": "100",
                 });
-                $(attributeDivAttributesAp).css('width','100%');              
+                $(attributeDivAttributesAp).css('width',_character.attackPower.toString()+'%');    
+                $(attributeDivAttributesAp).text('Attack Points');    
     var cardDivBody = $('<div>');
     $(cardDivBody).addClass('card-body');
     var cardDivText = $('<p>');
@@ -202,14 +201,36 @@ function createCharCard(_character){
     $(cardDivCard).append(cardDivCardTitle);
     $(cardDivProfile).append(profileDivProfileImg);
     $(profileDivProfileAttributes).append(attributeDivAttributesHp);
-    $(profileDivProfileAttributes).append(attributeDivAttributesAp);
+    $(profileDivProfileAttributes2).append(attributeDivAttributesAp);
     $(cardDivProfile).append(profileDivProfileAttributes);
+    $(cardDivProfile).append(profileDivProfileAttributes2);
     $(cardDivCard).append(cardDivProfile);
     $(cardDivCard).append(cardDivBody);
     
     return $(cardDivCard);
 
 }
-
+function getCAPoints(){
+    var prevnum = 0;
+    var cap = [];
+    for(let i=0;i<names.length,i++;){
+        var ca = random(30, 50);
+        if(prevnum === 0){       
+            prevnum = ca;
+        }else{
+    do{
+        ca = random(30, 50);
+        var c = random(3, 5);
+        ca =+ c;
+    }while(ca < prevnum);
+   cap.push(ca);
+    }   
+}
+return cap;
+}
+function randomNum(min,max){
+    var n = Math.floor((Math.random() * max) + min);
+   return n;
+}
 
 });
