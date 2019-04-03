@@ -20,8 +20,9 @@ var characterBase = function (_image, _name, _type, _health, _attackPower, _coun
 var names = ['Olozumin','Krisrora','Perqen','Daharice','Bromno'];
 var types = ['Human','Elf','Human','Mage','Elf','Eladrin'];
 var deck = $('<div>');
-$(deck).addClass('card-deck');
-var caPoints = getCAPoints();
+    $(deck).addClass('card-deck');
+    var caPoints = [20, 15, 26, 12, 67];
+//var caPoints = getCAPoints();
 for(var i=0;i<names.length,i++;){
     var ap = random(20, 40);
     var charPlayer = new characterBase('/assets/images/p'+i+'.jpg', names[i], types[i], 100, 100-ap, caPoints[i]);
@@ -41,8 +42,8 @@ $('#gameArea').append(deck);
 // Your players should be able to win and lose the game no matter what character they choose.The challenge should come from picking the right enemies, not choosing the strongest player.
 function getCAPoints(){
     var prevnum = 0;
-var cap = [];
-for(let i=0;i<names.length,i++;){
+    var cap = [];
+    for(let i=0;i<names.length,i++;){
     var ca = random(30, 50);
     if(prevnum === 0){       
         prevnum = ca;
