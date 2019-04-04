@@ -23,12 +23,15 @@ $(document).ready(function () {
         };
     };
 
-    characters =createPlayers(NAMES,TYPES)     
+    characters = createPlayers(NAMES,TYPES);    
     var group = createDeck(characters);
     $('#gameArea').append(group);
     var gamearea = $('#gameArea');
     makeCardsSelectable(gamearea);
-    var selectedPlayer = 
+
+    
+
+
 // Each time the player attacks, their character's Attack Power increases by its base Attack Power. 
 // For example, if the base Attack Power is 6, each attack will increase the Attack Power by 6(12, 18, 24, 30 and so on).
 // The enemy character only has`Counter Attack Power`.
@@ -46,7 +49,7 @@ $(document).ready(function () {
         for (let i = 0; i <= len; i++){
             var cardId = '#card_p' + i.toString();
             $(cardId).addClass('selectable');
-
+            $(cardId).click(cardId, makeActive);
         }
 
 
