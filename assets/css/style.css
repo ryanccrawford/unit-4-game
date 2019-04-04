@@ -12,3 +12,31 @@ height: 112px;
 }
 .ap{background-color: blue;}
 .hp{background-color: green;}
+
+
+.selectable:hover{
+    cursor: pointer;
+    background-color: rgba(148, 148, 148, 1);
+    box-shadow: 1px 1px 20px 1px rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+    z-index: 1000 !important;
+    
+}
+.active-card{
+        background-color: darkgray;
+        border: 3px dotted yellow;
+}
+.attributes{
+
+    background-color: transparent;
+}
+#card_p0,
+#card_p1,
+#card_p2,
+#card_p3,
+#card_p4,
+#card_p5,
+#card_p6 {
+    z-index: 10;
+    transition: transform .2s;
+}

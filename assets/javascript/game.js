@@ -1,8 +1,16 @@
-// Each character in the game has 3 attributes: `Health Points`, `Attack Power` and`Counter Attack Power`.
+const NAMES = ['Xiomi', 'Krisrora', 'Perqen', 'Daharice'];
+const TYPES = ['Human', 'Elf', 'Mage', 'Underlord'];
+var characters = [];
+var ic = 0;
+var idCounter = 0;
+
+
 $(document).ready(function () {
-    var characters = [];
-    var ic = 0;
-    var idCounter = 0;
+    
+    
+
+    // Each character in the game has 3 attributes: `Health Points`, `Attack Power` and`Counter Attack Power`.
+    // Created an Object to be a character
     var characterBase = function (_id, _image, _name, _type, _health, _attackPower, _counterAttackPower) {
         return {
             id: _id,
@@ -15,16 +23,12 @@ $(document).ready(function () {
         };
     };
 
-    
-
-var names1 = ['Xiomi','Krisrora','Perqen','Daharice','Bromno','Firick','Jacob'];
-var types1 = ['Human','Elf','Mage','Underlord','Goblin','Night Drifter','Eladrin'];
-var deck1 = createDeck(names1, types1);
-var row1 = $('<div>');
-$(row1).addClass('row');
-    $(row1).append(deck1);
-$('#gameArea').append(row1);
- 
+    characters =createPlayers(NAMES,TYPES)     
+    var group = createDeck(characters);
+    $('#gameArea').append(group);
+    var gamearea = $('#gameArea');
+    makeCardsSelectable(gamearea);
+    var selectedPlayer = 
 // Each time the player attacks, their character's Attack Power increases by its base Attack Power. 
 // For example, if the base Attack Power is 6, each attack will increase the Attack Power by 6(12, 18, 24, 30 and so on).
 // The enemy character only has`Counter Attack Power`.
@@ -34,7 +38,32 @@ $('#gameArea').append(row1);
 // A winning player must pick their characters wisely by first fighting an enemy with low`Counter Attack Power`.This will allow them to grind`Attack Power` and to take on enemies before they lose all of their`Health Points`.Healing options would mess with this dynamic.
 // Your players should be able to win and lose the game no matter what character they choose.The challenge should come from picking the right enemies, not choosing the strongest player.
 
-var screen = function () {
+    function makeCardsSelectable(_gameArea)
+    {
+        var len = characters.length;
+        
+
+        for (let i = 0; i <= len; i++){
+            var cardId = '#card_p' + i.toString();
+            $(cardId).addClass('selectable');
+
+        }
+
+
+
+
+    }
+
+    function activateCard(_cardNumber)
+    {
+        var cardId = '#card_p' + _cardNumber.toString();
+        $(cardId).addClass('active-card');
+
+    }
+    
+    
+    var screen = function ()
+    {
     return { 
         
     
@@ -43,7 +72,8 @@ var screen = function () {
 
 // Each time the player attacks, their character's Attack Power increases by its base Attack Power. 
 // For example, if the base Attack Power is 6, each attack will increase the Attack Power by 6(12, 18, 24, 30 and so on).
-function calcAttackPower(base, currentAttackPower) {
+    function calcAttackPower(base, currentAttackPower)
+    {
  
     return currentAttackPower + base;
 
@@ -70,11 +100,13 @@ function chooseFighter() {
 
 // * The player must then defeat all of the remaining fighters.Enemies should be moved to a different area of the screen.
 
-function moveEnemies() {
+    function moveEnemies()
+    {
     
 }
 
-function hasDefeatedAll() {
+    function hasDefeatedAll()
+    {
 
 
     return false;
@@ -126,30 +158,51 @@ function opponentAttack() {
 //    * When the defender's `HP` is reduced to zero or below, remove the enemy from the `defender area`. The player character can now choose a new opponent.
 
 // 4. The player wins the game by defeating all enemy characters.The player loses the game the game if their character's `HP` falls to zero or below.
-
-function createDeck(_n,_t){
-    var d = $('<div>');
-    $(d).addClass('row');
-    var ca = randomNum();
-    var apmax = 50;
-    var vc =  _n.length-1;
-    while(ic <= vc){
-    var ap = randomNum(10,apmax);
-    apmax =- ap;
-    var charPlayer = new characterBase(idCounter++, 'assets/images/p'+ic.toString()+'.jpg', _n[ic], _t[ic], 100, (100-ap), ap);
-    characters.push(charPlayer); 
-    var newPlayerCard = createCharCard(charPlayer);
-    $(d).append(newPlayerCard);
-    ic++;
+function createPlayers(_names, _types) {
+        var _characters = [];
+        var ca = randomNum(10,40);
+        var apmax = 50;
+        var numCharacters = _names.length;
+    for (let h = 0; h <= numCharacters-1; h++) {
+    
+        var ap = randomNum(10, apmax);
+        apmax -= ap;
+        var charPlayer = new characterBase(idCounter++, 'assets/images/p' + h.toString() + '.jpg', _names[h], _types[h], 100, (100 - ap), ap);
+        _characters.push(charPlayer);
     }
-  
-    return d;
+        return _characters;
+    }
+function createDeck(_characters) {
+    var row = $('<div>');
+    var charCounter = 0;
+    $(row).addClass('row');
+    
+    var totalRows = Math.floor(characters.length / 4);
+    if ((characters.length % 4) > 0) {
+        totalRows++;
+    }
+        for (let j = 0; j <= (totalRows); j++) {
+            var cgroup = $('<div>')
+            $(cgroup).addClass('card-deck');
+            
+            for (let i = 0; i <= 4; i++) {
+                if (!_characters[charCounter])
+                {
+                    break;
+                    }
+                var playerCard = createCharCard(_characters[charCounter++]);
+                $(cgroup).append(playerCard);
+            }
+            $(row).append(cgroup);
+        }
+        
+       
+    return row;
 }
 function createCharCard(_character){
     var id = "p" + _character.id;
     var cardDivCard = $('<div>');
-
-    $(cardDivCard).addClass('card col-xs-6 col-sm-3 col-m-4 col-xl-2 m-1');
+    $(cardDivCard).addClass('card col-xs-8 col-m-6 col-xl-4');
     $(cardDivCard).attr('id', 'card_' + id);
     var cardDivCardTitle = $('<h4>');
     $(cardDivCardTitle).addClass('card-title');
@@ -207,7 +260,7 @@ function createCharCard(_character){
     $(cardDivCard).append(cardDivProfile);
     $(cardDivCard).append(cardDivBody);
     
-    return $(cardDivCard);
+    return cardDivCard;
 
 }
 function getCAPoints(){
