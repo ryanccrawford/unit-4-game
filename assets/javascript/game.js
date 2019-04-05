@@ -6,6 +6,7 @@ var idCounter = 0;
 var selectedPlayer;
 var enemiePlayers = [];
 var button;
+var kills = 0;
 
 $(document).ready(function () {
     
@@ -96,7 +97,7 @@ $(document).ready(function () {
                             enemiePlayers.push(characters[i]);
                         }
                     }
-                    moveEnemies('offence');
+                    moveAllEnemies('offence');
                 })
             }
             );
@@ -140,16 +141,18 @@ $(document).ready(function () {
     }
 
     // * The player must then defeat all of the remaining fighters.Enemies should be moved to a different area of the screen.
-    function moveEnemies(location) {
+            function moveAllEnemies(location) {
 
-        if (location === 'offence') {
-            moveTo(enemiePlayers, location);
-        }
-    
-    }
+                if (location === 'offence') {
+                    moveTo(enemiePlayers, location);
+                }
+            
+            }
 
             function hasDefeatedAll() {
-
+                if(kills === enemiePlayers.length){
+                    return true;
+                }
 
                 return false;
             }
