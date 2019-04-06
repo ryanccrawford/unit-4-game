@@ -7,6 +7,7 @@ var selectedPlayer;
 var enemiePlayers = [];
 var button;
 var kills = 0;
+var scrollImg = 'url(assets/images/player_select.png)';
 
 $(document).ready(function () {
     
@@ -18,7 +19,7 @@ $(document).ready(function () {
         return {
             id: _id,
             cardId: function () {
-                return 'card_p' + this.id
+                return 'card_p' + this.id;
             },
             getCard: function () {
                 var cname = '#' + this.cardId();
@@ -37,22 +38,34 @@ $(document).ready(function () {
     var group = createDeck(characters);
     $('#gameArea').append(group);
    
-    topMessage('CHOOSE YOUR CHARACTER', 'select-player', false, true);
+    topMessage('', scrollImg, 'select-player');
     var gamearea = $('#gameArea');
     makeCardsSelectable(gamearea);
    
 
 
-    function topMessage(message, styleClass = 'topMes', animation = 'none', fadeIn = true) {
-        if (!animation === 'none' && !animation === false) {
-            $('#topMessage').animation(animation);
-        }
-        if (fadeIn) {
-            $('#topMessage').fadeIn();
-        }
+    function topMessage(message, image, styleClass) {
         $('#topMessage').empty();
+      
         $('#topMessage').text(message);
-        $('#topMessage').addClass(styleClass);
+        $('#topMessage').addClass(styleClass + " enter");
+        if(image){  
+            $('#topMessage').css(
+                {   'position': "absolute",
+                    'z-index': '10000',
+                    'background-image': image,
+                    'background-repeat': 'no-repeat',
+                    'background-position': 'center',
+                    'background-size': '372px',
+                    'width': '100%',
+                    'height': '200px',
+                    'top': '-98px',
+                }
+            );
+            
+        }
+        
+       
     }
 
 
@@ -73,34 +86,7 @@ $(document).ready(function () {
             var card = '#' + characters[i].cardId();
             
             $(card).addClass('selectable');
-            $(card).click(function () {
-                $('.active-card').removeClass('active-card');
-               
-                $(this).addClass('active-card');
-                if (button) {
-                    $(button).remove();
-                }
-                button = $('<button>');
-                $(button).text('Select');
-                $(button).addClass('btn btn-outline-primary');
-                $(button).attr('id', 'button_' + i.toString());
-                $(this).append(button);
-                $(this).click(card, function (card) {
-                    
-                    selectedPlayer = card.currentTarget;
-                    var l = characters.length;
-                    for (let i = 0; i <= l - 1; i++) {
-                        var loopCard = characters[i].getCard();
-                        if (loopCard[0] === selectedPlayer) {
-                            continue;
-                        } else {
-                            enemiePlayers.push(characters[i]);
-                        }
-                    }
-                    moveAllEnemies('offence');
-                })
-            }
-            );
+            $(card).click(event, clickCard);
         }
 
 
@@ -108,7 +94,41 @@ $(document).ready(function () {
 
     }
     
+    function clickCard(event) {
 
+        var target = event.currentTarget;
+        $('.active-card').removeClass('active-card');
+       
+        $(target).addClass('active-card');
+        if (button) {
+            $(button).remove();
+        }
+        var idIndex = target.id.toString().charAt(target.id.length-1);
+        button = $('<button>');
+        $(button).text('Select');
+        $(button).addClass('btn btn-outline-primary');
+        $(button).attr('id', 'button_' + idIndex);
+        $(target).append(button);
+        var card = '#' + characters[parseInt(idIndex)].cardId();
+        $(target).click(card, function (card) {
+            
+            selectedPlayer = card.currentTarget;
+            var l = characters.length;
+            for (let i = 0; i <= l - 1; i++) {
+                var loopCard = characters[i].getCard();
+                if (loopCard[0] === selectedPlayer) {
+                    continue;
+                } else {
+                    enemiePlayers.push(characters[i]);
+                }
+            }
+            moveAllEnemies('offence');
+           $(card.currentTarget).removeClass('col');
+           $(card.currentTarget).addClass('col-4');
+           $('#gameArea').addClass('col');
+           $('#gameArea').removeClass('container');
+        });
+    }
     var screen = function () {
         return {};
     };
@@ -228,14 +248,13 @@ $(document).ready(function () {
             function createDeck(_characters) {
                 var row = $('<div>');
                 var charCounter = 0;
-                $(row).addClass('row');
-    
+                    
                 var totalRows = Math.floor(characters.length / 4);
                 if ((characters.length % 4) > 0) {
                     totalRows++;
                 }
                 for (let j = 0; j <= (totalRows); j++) {
-                    var cgroup = $('<div>')
+                    var cgroup = $('<div>');
                     $(cgroup).addClass('card-deck');
             
                     for (let i = 0; i <= 4; i++) {
@@ -254,7 +273,7 @@ $(document).ready(function () {
             function createCharCard(_character) {
                 var id = "p" + _character.id;
                 var cardDivCard = $('<div>');
-                $(cardDivCard).addClass('card col-xs-8 col-m-6 col-xl-4');
+                $(cardDivCard).addClass('card col');
                 $(cardDivCard).attr('id', _character.cardId());
                 var cardDivCardTitle = $('<h4>');
                 $(cardDivCardTitle).addClass('card-title');
@@ -266,7 +285,7 @@ $(document).ready(function () {
                 var profileDivProfileImg = $('<img>');
                 $(profileDivProfileImg).addClass('card-img-top ml-1 mr-1');
                 $(profileDivProfileImg).attr('id', _character.id);
-                $(profileDivProfileImg).attr('src', _character.image)
+                $(profileDivProfileImg).attr('src', _character.image);
                 var profileDivProfileAttributes = $('<div>');
                 $(profileDivProfileAttributes).addClass('attributes');
                 $(profileDivProfileAttributes).addClass('progress');

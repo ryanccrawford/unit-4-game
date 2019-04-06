@@ -54,6 +54,13 @@ height: 112px;
     text-align: center;
 
 }
+.imageIcon{
+    position: relative;
+    top: 0;
+    z-index: 0;
+    text-align: center;
+    width: 100%;
+}
 .active-card{
         background-color: darkgray;
         border: 3px dotted yellow;
@@ -68,4 +75,17 @@ height: 112px;
 #card_p6 {
     z-index: 10;
     transition: transform .2s;
+}
+.enter {
+	animation: enterIn 1.5s .5s both;
+}
+@keyframes enterIn {
+    0% {
+       
+        transform: scaleY(0);
+    }
+    100% {
+        
+        transform: scaleY(1);
+    }
 }
