@@ -54,6 +54,16 @@ height: 112px;
     text-align: center;
 
 }
+.fighter{
+    background-color: red !important;
+
+    
+}
+.fighter:hover {
+    background-color: red !important;
+
+
+}
 .imageIcon{
     position: relative;
     top: 0;
@@ -88,4 +98,18 @@ height: 112px;
         
         transform: scaleY(1);
     }
+}
+.fightMessage{
+        font-family: inherit;
+        font-size: 18px;
+        width: 240px;
+        position: absolute;
+        background-color: white;
+        box-shadow: 1px 1px 4px 3px white;
+        z-index: 10000;
+        color: white;
+        padding: 14px;
+        border-radius: 27px;
+        background-color: #0909ffb5;
+        top: -44px;
 }

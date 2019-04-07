@@ -1,3 +1,5 @@
+// Declare any Globals that we may need.
+
 const NAMES = ['Xiomi', 'Krisrora', 'Perqen', 'Daharice'];
 const TYPES = ['Human', 'Elf', 'Mage', 'Underlord'];
 var characters = [];
@@ -8,13 +10,20 @@ var enemiePlayers = [];
 var button;
 var kills = 0;
 var scrollImg = 'url(assets/images/player_select.png)';
-
+var topMess = $('#topMessage');
+var gamearea = $('#gameArea');
+var whosTurn = 0;
+var isFighting = false;
+var currentPickedFighter;
+var playerSelected = false
+var playerDied = false;
+var enemyDied = false;
 $(document).ready(function () {
     
     
 
     // Each character in the game has 3 attributes: `Health Points`, `Attack Power` and`Counter Attack Power`.
-    // Created an Object to be a character
+    // Created a character Object that contains all 3 atributes
     var characterBase = function (_id, _image, _name, _type, _health, _attackPower, _counterAttackPower) {
         return {
             id: _id,
@@ -30,28 +39,160 @@ $(document).ready(function () {
             type: _type,
             health: _health,
             attackPower: _attackPower,
+            baseAp: _attackPower,
             counterAttackPower: _counterAttackPower,
+            isEnemie: false,
+            isAttacking: false,
+            isDefending: false,
+
         };
     };
+    
+    //  attack function that will detect the correct attacker and defender automatically
+    function attack(_attacker, _defender) {
+        var ida = _attacker.id.charAt(_attacker.id.length - 1);
+        var idb = _defender.id.charAt(_defender.id.length - 1);
+        var attakerIsEnemy = false;
+        if (typeof (_attacker.attributes['data-type']) != 'undefined') {
+            attakerIsEnemy = true;
+        }
+        var defenderIsEnemy = !attakerIsEnemy;
+      
+       
+        var attacker, defender;
+        if (attakerIsEnemy) {
+            
+            attacker = enemiePlayers[parseInt(ida)];
+        } else {
+            
+            attacker = characters[ida];
+        }
+       
+        if (defenderIsEnemy) {
+            
+            defender = enemiePlayers[parseInt(idb)];
 
+        } else {
+            
+            defender = characters[idb];
+        }
+
+
+        if (defender.health <= 0) {
+            $(_defender).fadeOut(1000);
+            if (attakerIsEnemy) {
+                playerDied = true;
+            } else {
+                kills++;
+                enemyDied = true;
+            }
+            return false;
+        }
+        
+        if (attacker.health <= 0) {
+            $(_attacker).fadeOut(1000);
+            if (attakerIsEnemy) {
+                playerDied = true;
+            } else {
+                kills++;
+                enemyDied = true;  
+            }
+            return false;
+        }
+
+
+        if (attacker.isEnemie) {
+            var attackpoint = randomNum(attacker.counterAttackPower - 10, attacker.counterAttackPower)
+            defender.health = defender.health - attacker.counterAttackPower;
+            updateScreen(attacker, defender);
+        } else {
+            var attackpoint = randomNum(attacker.attackPower - 10, attacker.attackPower)
+            defender.health = defender.health - attacker.attackPower;
+            updateScreen(attacker, defender);
+        }
+
+        if (!attakerIsEnemy) {
+         // Each time the player attacks, their character's Attack Power increases by its base Attack Power. 
+       // For example, if the base Attack Power is 6, each attack will increase the Attack Power by 6(12, 18, 24, 30 and so on).
+
+            attacker.attackPower += attacker.base;
+        }
+        //redraw and update the display 
+        updateScreen(attacker, defender);
+
+        defender.isDefending = !defender.isDefending
+        defender.isAttacking = !defender.isAttacking
+        attacker.isDefending = !attacker.isDefending
+        attacker.isAttacking = !attacker.isAttacking
+
+        return true;
+
+    }
+    //Refreshes the screen to show the most upto date HP and AP information
+    function updateScreen(a, b) {
+        var ida = a.id.toString();
+        var idb = b.id.toString();
+        var ahp = parseInt((a.health * 100) / 100);// convert to % between 0 - 100%
+        var bhp = parseInt((b.health * 100) / 100);//convert to % between 0 - 100%
+        var aap = parseInt((a.attackPower * 100) / 100);//convert to % between 0 - 100%
+        var bap = parseInt((b.attackPower * 100) / 100);//convert to % between 0 - 100%
+        var capa = parseInt((a.counterAttackPower * 100) / 100);//convert to % between 0 - 100%
+        var capb = parseInt((b.counterAttackPower * 100) / 100);//convert to % between 0 - 100%
+        if (a.isEnemie) {
+            $('#attributesAp_p' + ida).css('width', capa.toString()+'%')
+        } else {
+            $('#attributesAp_p' + ida).css('width', aap.toString() + '%')
+        }
+        if (b.isEnemie) {
+            $('#attributesAp_p' + idb).css('width', capb.toString() + '%')
+        } else {
+            $('#attributesAp_p' + idb).css('width', bap.toString() + '%')
+        }
+         
+   
+        $('#attributesHp_p' + ida).css('width', ahp.toString() + '%')
+        $('#attributesHp_p' + idb).css('width', bhp.toString() + '%')
+
+
+    }
+
+    //Initializing and starting the game.
     characters = createPlayers(NAMES, TYPES);
     var group = createDeck(characters);
-    $('#gameArea').append(group);
+    $(gamearea).append(group);
    
     topMessage('', scrollImg, 'select-player');
-    var gamearea = $('#gameArea');
-    makeCardsSelectable(gamearea);
    
+    makeCardsSelectable(selectPlayer);
+   
+    // TODO: Create function to allow the player to select the next opponent.
+    function continueFighting() {
+        
 
 
+    }
+
+    // TODO: Creat function to check if game is over or if player is dead. if so reset everything and let the user try again
+    function anyWinners() {
+        
+
+
+    }
+
+    //Used to clear the #topMessage Area
+    function clearTopMess() {
+        topMessage('',false,'');
+    }
+    // Allows you to write messages to the screen
     function topMessage(message, image, styleClass) {
         $('#topMessage').empty();
       
         $('#topMessage').text(message);
         $('#topMessage').addClass(styleClass + " enter");
-        if(image){  
+        if (image) {
             $('#topMessage').css(
-                {   'position': "absolute",
+                {
+                    'position': "absolute",
                     'z-index': '10000',
                     'background-image': image,
                     'background-repeat': 'no-repeat',
@@ -63,11 +204,13 @@ $(document).ready(function () {
                 }
             );
             
-        }
-        
+        } else {
+            $('#topMessage').remove();
+            var newmessage = $('<div>').attr('id', 'topMessage');
+            $('#messcol').append(newmessage);
        
+        }
     }
-
 
     // Each time the player attacks, their character's Attack Power increases by its base Attack Power. 
     // For example, if the base Attack Power is 6, each attack will increase the Attack Power by 6(12, 18, 24, 30 and so on).
@@ -78,68 +221,70 @@ $(document).ready(function () {
     // A winning player must pick their characters wisely by first fighting an enemy with low`Counter Attack Power`.This will allow them to grind`Attack Power` and to take on enemies before they lose all of their`Health Points`.Healing options would mess with this dynamic.
     // Your players should be able to win and lose the game no matter what character they choose.The challenge should come from picking the right enemies, not choosing the strongest player.
 
-    function makeCardsSelectable() {
-        var len = characters.length;
-        
-
-        for (let i = 0; i <= len - 1; i++) {
-            var card = '#' + characters[i].cardId();
-            
-            $(card).addClass('selectable');
-            $(card).click(event, clickCard);
-        }
-
-
-
-
-    }
-    
-    function clickCard(event) {
-
-        var target = event.currentTarget;
-        $('.active-card').removeClass('active-card');
+    //used to allow the cards become highlightable. a click function is passed to help with changeing the classes to animate and provide 
+    //the secondary event that selects the player
+    function makeCardsSelectable(clickFunction) {
        
-        $(target).addClass('active-card');
-        if (button) {
-            $(button).remove();
-        }
-        var idIndex = target.id.toString().charAt(target.id.length-1);
-        button = $('<button>');
-        $(button).text('Select');
-        $(button).addClass('btn btn-outline-primary');
-        $(button).attr('id', 'button_' + idIndex);
-        $(target).append(button);
-        var card = '#' + characters[parseInt(idIndex)].cardId();
-        $(target).click(card, function (card) {
-            
-            selectedPlayer = card.currentTarget;
-            var l = characters.length;
-            for (let i = 0; i <= l - 1; i++) {
-                var loopCard = characters[i].getCard();
-                if (loopCard[0] === selectedPlayer) {
-                    continue;
-                } else {
-                    enemiePlayers.push(characters[i]);
-                }
+            $('.selectable').removeClass('selectable');
+            var len = 0;
+            var what;
+            if (!isFighting) {
+                len = characters.length;
+                what = characters;
+            } else {
+                len = enemiePlayers.length;
+                what = enemiePlayers;
             }
-            moveAllEnemies('offence');
-           $(card.currentTarget).removeClass('col');
-           $(card.currentTarget).addClass('col-4');
-           $('#gameArea').addClass('col');
-           $('#gameArea').removeClass('container');
-        });
-    }
-    var screen = function () {
-        return {};
-    };
 
-    // Each time the player attacks, their character's Attack Power increases by its base Attack Power. 
-    // For example, if the base Attack Power is 6, each attack will increase the Attack Power by 6(12, 18, 24, 30 and so on).
-    function calcAttackPower(base, currentAttackPower) {
+            for (let i = 0; i <= len - 1; i++) {
+                var card = '#' + what[i].cardId();
+                $(card).addClass('selectable');
+            
+                $(card).click(event, clickFunction);
+            }
+        
+    }
+    //a click function that can  be passed into the above function to allow selection of the player.
+    function selectPlayer(event) {
+        if (!playerSelected) {
+            playerSelected = true;
+            var target = event.currentTarget;
+            
+            $('.active-card').removeClass('active-card');
+       
+            $('#'+target.id).addClass('active-card');
+            var idIndex = target.id.toString().charAt(target.id.length - 1);
+            var card = '#' + characters[parseInt(idIndex)].cardId();
+
+            $(target).click(card, function (card) {
+                $('.card').off();
+                playerSelected = true;
+                selectedPlayer = card.currentTarget;
+                var l = characters.length;
  
-        return currentAttackPower + base;
+                for (let i = 0; i <= l - 1; i++) {
+                    var loopCard = characters[i].getCard();
+                   
+                    if (loopCard[0] === selectedPlayer) {
+                        continue;
+                    } else {
+                        characters[i].isEnemie = true;
+                        characters[i].base = 0;
+                        enemiePlayers.push(characters[i]);
+                    }
+                }
+             
+                startGame(card.currentTarget);
 
-    }
+            });
+        }
+        playerSelected = false;
+        }
+        
+        
+        
+    
+    
 
     // // * The enemy character only has`Counter Attack Power`.
     //     * Unlike the player's `Attack Points`, `Counter Attack Power` never changes.
@@ -150,14 +295,65 @@ $(document).ready(function () {
 
     // * A winning player must pick their characters wisely by first fighting an enemy with low`Counter Attack Power`.This will allow them to grind`Attack Power` and to take on enemies before they lose all of their`Health Points`.Healing options would mess with this dynamic.
     //     * When the game starts, the player will choose a character by clicking on the fighter's picture. The player will fight as that character for the rest of the game.
-    function startGame() {
-    
+   //once player selection happens this loads the methods used to move the player an other characters into groups.
+    function startGame(target) {
+       
+       
+        // move all enimies to othe side of screen
+        moveAllEnemies('offence');
+        //cemove the col class and change it to col-4 class 
+        $(target).removeClass('col');
+        $(target).addClass('col-4');
+        $(target).css(['max-width', '240px']);
+        $(target).addClass(['col-sm-6', 'col-lg-4', 'col-xlg-3']);
+        $(gamearea).addClass('col');
+        $(gamearea).removeClass('container');
+        isFighting = true;
+        
+        clearTopMess();
+        $('#topMessage').text('It\'s your move. You must fight to stay alive. Who will you battle?').addClass('fightMessage').fadeIn(1000);
+        setTimeout(function () {
+            $('#topMessage').fadeOut(4000);
+        }, 5000);
+        
+          makeCardsSelectable(pickFighter);
+            
+        
+        
     }
+    // * The player chooses an opponent by clicking on an enemy's picture.
+    // this is anothe function that could be used as an argument for the makeCardsSelectable(clickFunction) 
+    //Making this one of the most versital function in the program. 
+    function pickFighter(event) {
+           //gets the target object or the parent sender
+        var target = event.currentTarget;
+            // turns off the buttons to prvent multiple clicks from orccuring
+            $('div').off();
+            // $(target).removeClass('cardfighter')
+            $(target).addClass('card fighter');
+        var idIndex = getIdFromTarget(target);
+            currentPickedFighter = enemiePlayers[idIndex].getCard()
 
-    function chooseFighter() {
-    
+            $(selectedPlayer).addClass('fighter').addClass('card').removeClass('selectable');
+            $(target).addClass('fighter').addClass('card').removeClass('selectable');
+            var live = true;
+        var f;
+        
+        // this is where the main fighting routine happens. You attack, If you live then the defender attacks
+        //this loops until someone dies.
+            while (live) {
+                live = attack(selectedPlayer, target)
+                live = attack(target, selectedPlayer);
+        }
+        
+        //TODO: Make function to aloow the player to select the next person to fight
+        //continueFighting();
 
-        return fighter;
+    }
+    function getIdFromTarget(target) {
+        
+        return parseInt(target.id.toString().charAt(target.id.length - 1));
+
     }
 
     // * The player must then defeat all of the remaining fighters.Enemies should be moved to a different area of the screen.
@@ -165,86 +361,49 @@ $(document).ready(function () {
 
                 if (location === 'offence') {
                     moveTo(enemiePlayers, location);
+                    $('.selectable').addClass('card');
                 }
-            
+                
             }
 
-            function hasDefeatedAll() {
-                if(kills === enemiePlayers.length){
-                    return true;
-                }
-
-                return false;
-            }
-
-            // * The player chooses an opponent by clicking on an enemy's picture.
-            function selectOpponent(who) {
-    
-            }
             // * Once the player selects an opponent, that enemy is moved to a`defender area`.
             function moveTo(who, whereTo) {
                 //who   enemiePlayers, 
                 //location location
                 var loc = $('#' + whereTo);
                 for (let i = 0; i <= who.length - 1; i++) {
-                    $(loc).append($(who[i].getCard()));
+                    var c = who[i].getCard();
+                   var d =  $(c).attr('data-type','enemy')
+                    $(loc).append(d);
                 }
+               
         
     
             }
 
-            function whereIs(who) {
-    
-            }
-
-            function canAttack(who) {
-
-                return false;
-            }
             // * The player will now be able to click the`attack` button.
             // * Whenever the player clicks`attack`, their character damages the defender.The opponent will lose`HP`(health points).These points are displayed at the bottom of the defender's picture. 
-
-            function attack(attacker, defender) {
-    
-            }
-
-
-
-            function isAttacking(who) {
-    
-
-
-            }
-
-            function isDefending(who) {
-    
-
-            }
-
             //     * The opponent character will instantly counter the attack.When that happens, the player's character will lose some of their `HP`. These points are shown at the bottom of the player character's picture.
-            function opponentAttack() {
-    
-
-            }
             // 3. The player will keep hitting the attack button in an effort to defeat their opponent.
-
             //    * When the defender's `HP` is reduced to zero or below, remove the enemy from the `defender area`. The player character can now choose a new opponent.
-
             // 4. The player wins the game by defeating all enemy characters.The player loses the game the game if their character's `HP` falls to zero or below.
+            
+            // creates all the players of the game
             function createPlayers(_names, _types) {
                 var _characters = [];
-                var ca = randomNum(10, 40);
-                var apmax = 50;
+                var ca = randomNum(10, 20);
+                var apmax = 80;
                 var numCharacters = _names.length;
                 for (let h = 0; h <= numCharacters - 1; h++) {
     
-                    var ap = randomNum(10, apmax);
-                    apmax -= ap;
-                    var charPlayer = new characterBase(h, 'assets/images/p' + h.toString() + '.jpg', _names[h], _types[h], 100, (100 - ap), ap);
+                    var ap = randomNum(20, apmax);
+                    apmax -= 5;
+                    var charPlayer = new characterBase(h, 'assets/images/p' + h.toString() + '.jpg', _names[h], _types[h], 100, (ap), ca);
                     _characters.push(charPlayer);
                 }
                 return _characters;
-            }
+    }
+            // creates a Card Deck of Players
             function createDeck(_characters) {
                 var row = $('<div>');
                 var charCounter = 0;
@@ -269,9 +428,11 @@ $(document).ready(function () {
         
        
                 return row;
-            }
+    }
+            // creates a single player card using jq to creat new elements dynamically
             function createCharCard(_character) {
                 var id = "p" + _character.id;
+                
                 var cardDivCard = $('<div>');
                 $(cardDivCard).addClass('card col');
                 $(cardDivCard).attr('id', _character.cardId());
@@ -283,7 +444,7 @@ $(document).ready(function () {
                 $(cardDivProfile).addClass('profile');
                 $(cardDivProfile).attr('id', 'profile_' + id);
                 var profileDivProfileImg = $('<img>');
-                $(profileDivProfileImg).addClass('card-img-top ml-1 mr-1');
+                $(profileDivProfileImg).addClass('card-img-top pl-1 pr-1');
                 $(profileDivProfileImg).attr('id', _character.id);
                 $(profileDivProfileImg).attr('src', _character.image);
                 var profileDivProfileAttributes = $('<div>');
@@ -317,10 +478,10 @@ $(document).ready(function () {
                 $(attributeDivAttributesAp).text('Attack Points');
                 var cardDivBody = $('<div>');
                 $(cardDivBody).addClass('card-body');
-                var cardDivText = $('<p>');
-                $(cardDivText).addClass('card-text');
-                $(cardDivText).text(_character.type);
-                $(cardDivBody).append(cardDivText);
+              var cardDivText = $('<p>');
+              $(cardDivText).addClass('card-text');
+              $(cardDivText).text('');
+             $(cardDivBody).append(cardDivText);
     
                 $(cardDivCard).append(cardDivCardTitle);
                 $(cardDivProfile).append(profileDivProfileImg);
@@ -330,28 +491,12 @@ $(document).ready(function () {
                 $(cardDivProfile).append(profileDivProfileAttributes2);
                 $(cardDivCard).append(cardDivProfile);
                 $(cardDivCard).append(cardDivBody);
-    
+                
+
                 return cardDivCard;
 
-            }
-            function getCAPoints() {
-                var prevnum = 0;
-                var cap = [];
-                for (let i = 0; i < names.length, i++;) {
-                    var ca = random(30, 50);
-                    if (prevnum === 0) {
-                        prevnum = ca;
-                    } else {
-                        do {
-                            ca = random(30, 50);
-                            var c = random(3, 5);
-                            ca = + c;
-                        } while (ca < prevnum);
-                        cap.push(ca);
-                    }
-                }
-                return cap;
-            }
+    }
+            // my own rnadom number generator function that generates a random number by passing the smallest number and largest number you whant it to return
             function randomNum(min, max) {
                 var n = Math.floor((Math.random() * max) + min);
                 return n;
