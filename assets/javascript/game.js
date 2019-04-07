@@ -1,3 +1,4 @@
+// ToDo: about 3 more methods need to be writtten to compleate the game. Needed A little more time. The  game works but only until you win or die then you can't do much tillyou refresh the browser and start over.
 // Declare any Globals that we may need.
 
 const NAMES = ['Xiomi', 'Krisrora', 'Perqen', 'Daharice'];
