@@ -63,22 +63,49 @@ $(document).ready(function () {
         var attacker, defender;
         if (attakerIsEnemy) {
             
-            attacker = enemiePlayers[parseInt(ida)];
+            attacker = characters[parseInt(ida)];
         } else {
             
-            attacker = characters[ida];
+            attacker = characters[parseInt(ida)];
         }
        
         if (defenderIsEnemy) {
             
-            defender = enemiePlayers[parseInt(idb)];
+            defender = characters[parseInt(idb)];
 
         } else {
             
-            defender = characters[idb];
+            defender = characters[parseInt(idb)];
         }
 
+        var attackpoint = 0;
+        if (attacker.isEnemie) {
+            attackpoint = randomNum(attacker.counterAttackPower - 10, attacker.counterAttackPower)/10
+        }else{
+            attackpoint = randomNum(attacker.attackPower - 10, attacker.attackPower)/10
+        }
+        if (attackpoint > 0) {
+            //flash the defenders background if he is hurt
+            $(defender.getCard()).addClass('hurt')
+            $(defender.getCard()).one('animationend',
+                function (e) {
+                    $(this).removeClass('hurt');
+                  
+                });
+            defender.health = defender.health - attackpoint;
+            updateScreen(attacker, defender);
+        }
+          
+        
+        if (!attakerIsEnemy) {
+         // Each time the player attacks, their character's Attack Power increases by its base Attack Power. 
+       // For example, if the base Attack Power is 6, each attack will increase the Attack Power by 6(12, 18, 24, 30 and so on).
 
+            attacker.attackPower += attacker.baseAp;
+        }
+
+        //redraw and update the display
+        updateScreen(attacker, defender);
         if (defender.health <= 0) {
             $(_defender).fadeOut(1000);
             if (attakerIsEnemy) {
@@ -89,38 +116,18 @@ $(document).ready(function () {
             }
             return false;
         }
-        
+
         if (attacker.health <= 0) {
             $(_attacker).fadeOut(1000);
             if (attakerIsEnemy) {
                 playerDied = true;
             } else {
                 kills++;
-                enemyDied = true;  
+                enemyDied = true;
             }
             return false;
         }
-
-
-        if (attacker.isEnemie) {
-            var attackpoint = randomNum(attacker.counterAttackPower - 10, attacker.counterAttackPower)
-            defender.health = defender.health - attacker.counterAttackPower;
-            updateScreen(attacker, defender);
-        } else {
-            var attackpoint = randomNum(attacker.attackPower - 10, attacker.attackPower)
-            defender.health = defender.health - attacker.attackPower;
-            updateScreen(attacker, defender);
-        }
-
-        if (!attakerIsEnemy) {
-         // Each time the player attacks, their character's Attack Power increases by its base Attack Power. 
-       // For example, if the base Attack Power is 6, each attack will increase the Attack Power by 6(12, 18, 24, 30 and so on).
-
-            attacker.attackPower += attacker.base;
-        }
-        //redraw and update the display 
-        updateScreen(attacker, defender);
-
+     
         defender.isDefending = !defender.isDefending
         defender.isAttacking = !defender.isAttacking
         attacker.isDefending = !attacker.isDefending
@@ -131,16 +138,16 @@ $(document).ready(function () {
     }
     //Refreshes the screen to show the most upto date HP and AP information
     function updateScreen(a, b) {
-        var ida = a.id.toString();
-        var idb = b.id.toString();
-        var ahp = parseInt((a.health * 100) / 100);// convert to % between 0 - 100%
-        var bhp = parseInt((b.health * 100) / 100);//convert to % between 0 - 100%
-        var aap = parseInt((a.attackPower * 100) / 100);//convert to % between 0 - 100%
-        var bap = parseInt((b.attackPower * 100) / 100);//convert to % between 0 - 100%
-        var capa = parseInt((a.counterAttackPower * 100) / 100);//convert to % between 0 - 100%
-        var capb = parseInt((b.counterAttackPower * 100) / 100);//convert to % between 0 - 100%
+        var ida = a.id.toString(),
+            idb = b.id.toString(),
+            ahp = parseInt((a.health / 100) * 100),// convert to % between 0 - 100%
+            bhp = parseInt((b.health / 100) * 100),//convert to % between 0 - 100%
+            aap = parseInt((a.attackPower / 100) * 100),//convert to % between 0 - 100%
+            bap = parseInt((b.attackPower / 100) * 100),//convert to % between 0 - 100%
+            capa = parseInt((a.counterAttackPower / 100) * 100),//convert to % between 0 - 100%
+            capb = parseInt((b.counterAttackPower / 100) * 100);//convert to % between 0 - 100%
         if (a.isEnemie) {
-            $('#attributesAp_p' + ida).css('width', capa.toString()+'%')
+            $('#attributesAp_p' + ida).css('width', capa.toString() + '%')                              
         } else {
             $('#attributesAp_p' + ida).css('width', aap.toString() + '%')
         }
@@ -333,7 +340,8 @@ $(document).ready(function () {
             // $(target).removeClass('cardfighter')
             $(target).addClass('card fighter');
         var idIndex = getIdFromTarget(target);
-            currentPickedFighter = enemiePlayers[idIndex].getCard()
+        var eindx = enemiePlayers.findIndex(function (object) { return object.id == idIndex });
+        currentPickedFighter = enemiePlayers[eindx].getCard();
 
             $(selectedPlayer).addClass('fighter').addClass('card').removeClass('selectable');
             $(target).addClass('fighter').addClass('card').removeClass('selectable');
@@ -342,14 +350,43 @@ $(document).ready(function () {
         
         // this is where the main fighting routine happens. You attack, If you live then the defender attacks
         //this loops until someone dies.
-            while (live) {
-                live = attack(selectedPlayer, target)
-                live = attack(target, selectedPlayer);
-        }
+        var a = selectedPlayer
+        var b = target
+        var divTagv =$('<div>').addClass('attack-button-wrapper')
+        var attackButton = $('<button>').addClass('attack-button btn-primary').text('Attack!')
+        attackButton.click(function () {
+            $(this).attr("disabled", true)
+            $(this).text('Attacking!')
+            if (!fightNow(a, b)) {
+                console.log('inside button Click')
+            } else {
+                var thisRef = this
+                var to = setTimeout(function () {
+                    $(thisRef).text('Defending!')
+                    if (!fightNow(b, a)) {
+                        $(thisRef).remove();
+                        console.log('inside timer')
+                    } else {
+                        $(thisRef).attr("disabled", false)
+                        $(thisRef).text('Attack!')
+                    }
+                }, 1000)
+            }
+        })
+     
+        $(divTagv).append(attackButton)
+        $('#card-deck_0').append(divTagv)
+           
+               
+      
+        
         
         //TODO: Make function to aloow the player to select the next person to fight
         //continueFighting();
 
+    }
+    function fightNow(_attacker, _defender) {
+        return attack(_attacker, _defender)
     }
     function getIdFromTarget(target) {
         
@@ -393,11 +430,11 @@ $(document).ready(function () {
             function createPlayers(_names, _types) {
                 var _characters = [];
                 var ca = randomNum(10, 20);
-                var apmax = 80;
+                var apmax = 12;
                 var numCharacters = _names.length;
                 for (let h = 0; h <= numCharacters - 1; h++) {
     
-                    var ap = randomNum(20, apmax);
+                    var ap = randomNum(2, apmax);
                     apmax -= 5;
                     var charPlayer = new characterBase(h, 'assets/images/p' + h.toString() + '.jpg', _names[h], _types[h], 100, (ap), ca);
                     _characters.push(charPlayer);
@@ -416,7 +453,7 @@ $(document).ready(function () {
                 for (let j = 0; j <= (totalRows); j++) {
                     var cgroup = $('<div>');
                     $(cgroup).addClass('card-deck');
-            
+                    $(cgroup).attr('id','card-deck_'+j.toString());
                     for (let i = 0; i <= 4; i++) {
                         if (!_characters[charCounter]) {
                             break;
